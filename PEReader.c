@@ -13,10 +13,14 @@ Description:PE File reader
 #define HANDLE_EXISTS -7
 #define MALLOC_ERROR -8
 
-void walk_pe_file(void *); //Starts the parsing of the PE file
+void * getdosheaderHandle(void *);
+void * getpeheaderHandle(void *,IMAGE_DOS_HEADER *);
+void menu(IMAGE_DOS_HEADER *,IMAGE_NT_HEADERS *);
 
 int main()
 {
+	IMAGE_DOS_HEADER * DOSheader;
+	IMAGE_NT_HEADERS * PEHeader;
 	HANDLE fileHandle,fileMapping; 
 	void * start_memory_addr; //Base address of PE file (DOS Header)
 	char * fileName = malloc(MAX_PATH); 
@@ -49,12 +53,42 @@ int main()
 		CloseHandle(fileHandle);
 		return EXIT_MAPPING_ERROR;
 	}
-	
-	walk_pe_file(start_memory_addr); //Pass the address of where our file is mapped in memory
+				//Casted as function is returning void *
+	DOSheader = (IMAGE_DOS_HEADER *)getdosheaderHandle(start_memory_addr); //Pass the address of where our file is mapped in memory
+	PEHeader = (IMAGE_NT_HEADERS *)getpeheaderHandle(start_memory_addr,DOSheader);
+
+	menu(DOSheader,PEHeader);
 }
 
-void walk_pe_file(void * base)
+void menu(IMAGE_DOS_HEADER * DOSheader,IMAGE_NT_HEADERS * PEHeader)
 {
+	printf("1. DOSheader Options \n");
+	printf("2. PEheader Options \n"); 
+}
+
+void * getpeheaderHandle(void * base, IMAGE_DOS_HEADER * DOSheaderRVA)
+{
+	void * PEHeader = (IMAGE_NT_HEADERS * )((BYTE *)base + DOSheaderRVA -> e_lfanew); //Calcuate the absolute address of the PE Header, BASE + RVA 
+	//Triple brackets is because -> operator has highger percedance than casting
+	if(((IMAGE_NT_HEADERS *)PEHeader) -> Signature != IMAGE_NT_SIGNATURE) //Similar to the DOS Header check, check if the PE Header signature PE\0\0 is present
+	{
+		printf("Invalid PE File! \n");
+	}
+	return PEHeader;
+}
+
+void * getdosheaderHandle(void * base)
+{
+	void * DOSheader = base;
+
+	if(((IMAGE_DOS_HEADER *)DOSheader) -> e_magic != IMAGE_DOS_SIGNATURE) //Check if the DOS header contains a valid MZ signature
+	{
+		printf("Not a valid PE file! \n");
+	}
+	
+	return DOSheader;
+
+	/*
 	int i = 0;
 
 	IMAGE_DOS_HEADER * DOSheader = base; //Mostly used to check the MZ signature is present and grab the offset to the start of the PE file
@@ -99,5 +133,6 @@ void walk_pe_file(void * base)
 	{
 		printf("RVA %.8x \n",PEHeader -> OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT + i]); //add 1 to the define which starts 0 so third iteration would be 0 + 3, could just use i but this way is more clear
 	}
+	*/
 
 }
