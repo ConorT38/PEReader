@@ -16,6 +16,8 @@ Description:PE File reader
 void * getdosheaderHandle(void *);
 void * getpeheaderHandle(void *,IMAGE_DOS_HEADER *);
 void menu(IMAGE_DOS_HEADER *,IMAGE_NT_HEADERS *);
+void walk_dos_header(IMAGE_DOS_HEADER *,int);
+void walk_pe_header(IMAGE_NT_HEADERS *,int);
 
 int main()
 {
@@ -62,8 +64,44 @@ int main()
 
 void menu(IMAGE_DOS_HEADER * DOSheader,IMAGE_NT_HEADERS * PEHeader)
 {
-	printf("1. DOSheader Options \n");
-	printf("2. PEheader Options \n"); 
+
+}
+
+void walk_pe_header(IMAGE_NT_HEADERS * PEHeader,int choice)
+{
+	if(choice == 1)
+	{
+		printf("Signature: %.8x \n",PEHeader -> Signature);
+	}
+}
+
+void walk_dos_header(IMAGE_DOS_HEADER * DOSheader, int choice)
+{
+	if(choice == 1)
+	{
+		printf("Signature: %.8x \n",DOSheader -> e_magic);
+	}
+	else if(choice == 2)
+	{
+		printf("Size: %.8x \n",DOSheader -> e_cparhdr);
+	}
+	else if(choice == 3)
+	{
+		printf("Relocations: %.8x \n",DOSheader -> e_crlc);
+	}
+	else if(choice == 4)
+	{
+		printf("RVA to PE Header: %.8x \n",DOSheader -> e_lfanew);
+	}
+	else if(choice == 5)
+	{
+		return;
+	}
+	else
+	{
+		printf("Not an option! \n");
+	}
+	
 }
 
 void * getpeheaderHandle(void * base, IMAGE_DOS_HEADER * DOSheaderRVA)
