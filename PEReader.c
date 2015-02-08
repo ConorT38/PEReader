@@ -1,5 +1,5 @@
 /*
-Author:Ciaran Strutt
+Author:Faggot Strutt
 Date:30/01/2015
 Description:PE File reader
 */
